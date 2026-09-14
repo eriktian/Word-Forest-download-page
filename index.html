@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>词林 Word Forest - 沉浸式英文听读与 SRS 生词记忆</title>
+  <style>
+    :root {
+      --bg: #0a0e17;
+      --card-bg: rgba(16, 24, 39, 0.7);
+      --card-border: rgba(56, 189, 248, 0.12);
+      --card-hover-border: rgba(56, 189, 248, 0.45);
+      --primary: #0ea5e9;
+      --primary-light: #38bdf8;
+      --primary-hover: #0284c7;
+      --primary-glow: rgba(14, 165, 233, 0.28);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", sans-serif;
+      background-color: var(--bg);
+      background-image: 
+        radial-gradient(circle at 50% -10%, rgba(14, 165, 233, 0.18), transparent 50%),
+        radial-gradient(circle at 85% 65%, rgba(56, 189, 248, 0.06), transparent 40%);
+      color: var(--text-main);
+      line-height: 1.6;
+      min-height: 100vh;
+      padding: 40px 24px;
+    }
+
+    .container {
+      max-width: 1080px;
+      margin: 0 auto;
+    }
+
+    /* Badge */
+    .badge-wrapper { text-align: center; margin-bottom: 20px; }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 16px;
+      border-radius: 20px;
+      background: rgba(14, 165, 233, 0.12);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      color: var(--primary-light);
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
+
+    /* Hero */
+    .hero { text-align: center; margin-bottom: 48px; }
+    
+    /* App Icon Styling matching the Flutter Logo */
+    .app-icon {
+      width: 80px; height: 80px;
+      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      border-radius: 22px;
+      margin: 0 auto 20px;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 12px 32px var(--primary-glow);
+    }
+
+    h1 {
+      font-size: 2.6rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 12px;
+      background: linear-gradient(180deg, #ffffff 0%, #cbd5e1 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .tagline {
+      color: var(--text-muted);
+      font-size: 1.1rem;
+      max-width: 620px;
+      margin: 0 auto 32px;
+    }
+
+    /* CTA Download Button */
+    .btn-download {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
+      color: #fff;
+      text-decoration: none;
+      padding: 16px 52px;
+      border-radius: 14px;
+      font-weight: 600;
+      box-shadow: 0 8px 28px var(--primary-glow);
+      transition: all 0.25s ease;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    .btn-download:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 14px 36px rgba(14, 165, 233, 0.45);
+    }
+    .btn-title { font-size: 1.15rem; letter-spacing: 0.5px; }
+    .btn-sub { font-size: 0.82rem; opacity: 0.9; font-weight: 400; margin-top: 3px; }
+
+    /* Safety Notice Card */
+    .notice-card {
+      background: rgba(245, 158, 11, 0.08);
+      border: 1px solid rgba(245, 158, 11, 0.25);
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin-bottom: 48px;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      font-size: 0.9rem;
+      color: #fcd34d;
+    }
+
+    /* Grid Section */
+    .section-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #fff;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 48px;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      backdrop-filter: blur(12px);
+      border-radius: 14px;
+      padding: 22px 20px;
+      transition: all 0.25s ease;
+    }
+    .card:hover {
+      border-color: var(--card-hover-border);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    }
+    .card-icon {
+      width: 42px; height: 42px;
+      border-radius: 10px;
+      background: rgba(14, 165, 233, 0.1);
+      border: 1px solid rgba(56, 189, 248, 0.15);
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 14px;
+      color: var(--primary-light);
+    }
+    .card-title { font-size: 1rem; font-weight: 600; margin-bottom: 6px; color: #fff; }
+    .card-desc { font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; }
+
+    /* Info Grid (Guide & FAQ) */
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 48px;
+    }
+
+    .guide-item {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 16px 18px;
+      margin-bottom: 12px;
+      font-size: 0.9rem;
+    }
+    .guide-item strong { color: var(--primary-light); }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      .grid { grid-template-columns: repeat(2, 1fr); }
+      .info-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 550px) {
+      .grid { grid-template-columns: 1fr; }
+      h1 { font-size: 2.1rem; }
+      body { padding: 24px 16px; }
+    }
+
+    footer {
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      border-top: 1px solid var(--card-border);
+      padding-top: 24px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    
+    <div class="badge-wrapper">
+      <span class="badge">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+        Android 正式发行版 v1.0
+      </span>
+    </div>
+
+    <div class="hero">
+      <!-- Customized Flutter Logo -->
+      <div class="app-icon">
+        <svg width="42" height="42" viewBox="0 0 24 24" fill="none">
+          <path d="M13.8 2.2L2.5 13.5l4.6 4.6L18.4 2.2h-4.6z" fill="#38BDF8"/>
+          <path d="M13.8 12.5l-4.6 4.6 4.6 4.6h4.6l-4.6-4.6 4.6-4.6h-4.6z" fill="#0284C7"/>
+          <path d="M9.2 17.1l4.6 4.6h4.6l-4.6-4.6h-4.6z" fill="#0369A1"/>
+        </svg>
+      </div>
+      
+      <h1>词林 (Word Forest)</h1>
+      <p class="tagline">专为英语进阶者打造 · 全格式文档听读 / 极速划词 / 盲听跟读 / SRS 记忆</p>
+      
+      <a href="https://wwbrx.lanzout.com/ipHkx48bjhdi" class="btn-download" target="_blank">
+        <span class="btn-title">下载 Android 正式版 APK</span>
+        <span class="btn-sub">官方蓝奏云高速下载 (提取码: 8888)</span>
+      </a>
+    </div>
+
+    <div class="notice-card">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      <div>
+        <strong>安卓安装安全提示：</strong> 本软件为独立版本，未上传至手机厂商商店。安装时若系统提示“未知来源”或“未经安全检测”，属正常安全机制，请放心点击<b>“允许安装”</b>或<b>“忽略风险”</b><b>“介意勿拍”</b>。
+      </div>
+    </div>
+
+    <div class="section-title">✨ 核心功能亮点</div>
+    <div class="grid">
+      <div class="card">
+        <div class="card-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        </div>
+        <div class="card-title">全格式文档导入</div>
+        <div class="card-desc">支持 TXT, PDF, DOCX 一键解析，把喜欢的英文文章直接变成专属听读库。</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        </div>
+        <div class="card-title">国内极速划词</div>
+        <div class="card-desc">直连国内引擎，点击单词 0 延迟秒出音标、释义与发音，支持随手记笔记。</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg>
+        </div>
+        <div class="card-title">盲听跟读训练</div>
+        <div class="card-desc">句子级循环播放、专属录音比对，1.0 倍自然发音语速，支持遮罩纯听力训练。</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="15" rx="2" ry="2"/><polyline points="17 2 12 7 7 2"/></svg>
+        </div>
+        <div class="card-title">SRS 间隔复习</div>
+        <div class="card-desc">内置艾宾浩斯记忆算法，3D 翻牌 4 档记忆评分，告别死记硬背。</div>
+      </div>
+    </div>
+
+    <div class="info-grid">
+      <div>
+        <div class="section-title">📖 极简使用指南</div>
+        <div class="guide-item"><strong>1. 导入文章：</strong>在“文章库”点击右下角【+】，选择本地 TXT/PDF/DOCX 文件导入。</div>
+        <div class="guide-item"><strong>2. 即时查词：</strong>阅读中点击任意生词，秒级调出释义，一键点击【+】存入生词本。</div>
+        <div class="guide-item"><strong>3. 精听跟读：</strong>开启盲听遮罩，配合底部播放栏进行分句精听与跟读录音。</div>
+        <div class="guide-item"><strong>4. 卡片复习：</strong>生词本点击右上角卡片图标，启动 3D 翻牌间隔算法复习。</div>
+      </div>
+
+      <div>
+        <div class="section-title">❓ 常见问题</div>
+        <div class="guide-item">
+          <div style="font-weight:600; color:#fff; margin-bottom:4px;">软件支持完全离线使用吗？</div>
+          <div style="color:var(--text-muted); font-size:0.85rem;">除首次获取全新生词释义需微量联网外，阅读、播报、生词本及卡片复习均支持完全离线运行。</div>
+        </div>
+        <div class="guide-item">
+          <div style="font-weight:600; color:#fff; margin-bottom:4px;">生词与阅读数据安全吗？</div>
+          <div style="color:var(--text-muted); font-size:0.85rem;">所有数据均加密保存在手机本地数据库（Isar）中，不上传任何第三方服务器。</div>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      <p>© 2026 词林 Word Forest · 专为英语进阶者打造</p>
+    </footer>
+
+  </div>
+</body>
+</html>
